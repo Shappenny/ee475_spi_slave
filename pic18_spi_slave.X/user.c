@@ -19,6 +19,8 @@
 
 #include "user.h"
 
+extern unsigned char nextByte;
+
 /******************************************************************************/
 /* User Functions                                                             */
 /******************************************************************************/
@@ -53,8 +55,23 @@ void SpiWrite(unsigned char byte)
 
 unsigned char spi_Send_Read(unsigned char byte)
 {
-    SSP2BUF = byte;
-    while (!SSP2STATbits.BF);//(!PIR1bits.SSP1IF);
-    //PIR1bits.SSP1IF = 0; 
+    SSP2BUF = nextByte;
+    while (!SSP2STATbits.BF);
+    // Check for first upload request
+    if (!uploadReq0 && !uploadReq1)
+    {
+        uploadReq0 = (SSP2BUF == UPLOAD_REQ0);
+        nextByte = byte;
+    // Check for second upload request
+    } else if (uploadReq0 && !uploadReq1)
+    {
+        uploadReq1 = (SSP2BUF == #UPLOAD_REQ1);
+        nextByte = UPLOAD_ACK0;
+    // Upload request has been received, send final acknowledgement
+    } else
+    {
+        nextByte = UPLOAD_ACK1;
+    }
+
     return SSP2BUF;
 }

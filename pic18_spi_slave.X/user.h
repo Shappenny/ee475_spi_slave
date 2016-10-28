@@ -49,6 +49,16 @@
 //78 01111000
 //5E 01011110
 
+/* TODO Application specific user parameters used in user.c may go here */
+#define UPLOAD_REQ0 0xAB
+#define UPLOAD_REQ1 0xCD
+#define UPLOAD_ACK0	0xEF
+#define UPLOAD_ACK1 0x01
+
+/******************************************************************************/
+/* User Function Prototypes                                                   */
+/******************************************************************************/
+
 unsigned char SpiRead(void);
 void SpiWrite(unsigned char byte);
 unsigned char spi_Send_Read(unsigned char byte);
