@@ -28,13 +28,7 @@
  // SPI Configuration 
  // ------------------ 
  
- // MSSP1: SPI1 Config and control 
-//#define   SPI_FOSC_4    0b00000000              // SPI Master mode, clock = Fosc/4
-//#define   SPI_FOSC_16   0b00000001              // SPI Master mode, clock = Fosc/16
-//#define   SPI_FOSC_64   0b00000010              // SPI Master mode, clock = Fosc/64
-//#define   SPI_FOSC_TMR2 0b00000011              // SPI Master mode, clock = TMR2 output/2
 #define   SLV_SSON      0b00000100              // SPI Slave mode, /SS pin control enabled
-//#define   SLV_SSOFF     0b00000101              // SPI Slave mode, /SS pin control disabled
  #define    SPI1_CONFIG         SLV_SSON    // Slave, SS control enabled 
  #define    SPI1_Enable()       {SSP2CON1bits.SSPEN=1;} 
  #define    SPI1_Disable()		{SSP2CON1bits.SSPEN=0;} 
@@ -44,10 +38,6 @@
  
  // Init MSSP1 in SPI mode and I/O pins 
  #define    SPI1_Init()            {SSP2STAT = 0x40; SSP2CON1 = SLV_SSON;}
-
-//2F 00101111
-//78 01111000
-//5E 01011110
 
 /* TODO Application specific user parameters used in user.c may go here */
 #define UPLOAD_REQ0 0xAB
