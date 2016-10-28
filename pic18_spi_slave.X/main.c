@@ -24,6 +24,7 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 unsigned char nextByte;  // Holds next sending byte for acknowledgement
+unsigned char uploadReq0, uploadReq1;
 
 /******************************************************************************/
 /* Main Program                                                               */

@@ -20,6 +20,7 @@
 #include "user.h"
 
 extern unsigned char nextByte;
+extern unsigned char uploadReq0, uploadReq1;
 
 /******************************************************************************/
 /* User Functions                                                             */
