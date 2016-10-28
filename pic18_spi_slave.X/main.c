@@ -24,6 +24,7 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 unsigned char nextByte;  // Holds next sending byte for acknowledgement
+unsigned char uploadReq0, uploadReq1;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -49,47 +50,6 @@ void main(void)
         //delay(10000);
     }
 }
-
-// Code for master main.c
-        for (int i = 0; i < 1024; ++i) 
-        {
-        int a = sample_adc(11);
-        sram_write(a, i);
-        // Buffer 80% full; request upload
-        if (i == 820) 
-        {
-            // Ask permission from surface
-            SPI_CSN = 0;
-            spi_Send_Read(UPLOAD_REQ0);
-            spi_Send_Read(UPLOAD_REQ1);
-            SPI_CSN = 1;
-            // Wait for response
-            delay(1000);
-            SPI_CSN = 0;
-            unsigned char ack0 = spi_Send_Read(UPLOAD_REQ0);
-            unsigned char ack1 = spi_Send_Read(UPLOAD_REQ1);
-            SPI_CSN = 1;
-            canSend = (ack0 == UPLOAD_ACK0) && (ack1 == UPLOAD_ACK1);
-        // Buffer 90% full; start collection on second buffer
-        } else if (i == 922) 
-        {
-            // TODO
-        }
-        
-    }
-    
-    if (canSend)
-    {
-        // Upload to surface ship, if we have permission
-        for (int i = 0; i < 1024; i++)
-        {
-            int data = sram_read(i);
-            SPI_CSN = 0;
-            spi_Send_Read(data);
-            SPI_CSN = 1;
-            delay(10000);
-        }
-    }
 
 void delay(int s) {
     int a = 0;
