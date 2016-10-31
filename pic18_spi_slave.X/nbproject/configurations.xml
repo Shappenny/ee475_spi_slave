@@ -29,9 +29,13 @@
     <itemPath>legal_disclaimer.txt</itemPath>
     <itemPath>project_information.txt</itemPath>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>../../../../../MCC18/h</Elem>
+    <Elem>.</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="C18_18F87K22" type="2">
+    <conf name="C18_18F25K22" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <targetDevice>PIC18F25K22</targetDevice>

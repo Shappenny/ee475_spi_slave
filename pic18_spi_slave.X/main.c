@@ -31,19 +31,23 @@ unsigned char uploadReq0, uploadReq1;
 /******************************************************************************/
 void delay(int s);
 unsigned char spi_Send_Read(unsigned char byte);
+void OpenUSART1(unsigned int n);
+//char getc1USART();
 
 void main(void)
 {    
+    TRISA = 0x10;
     // Need B0, B1, B2 as input for SPI_SS, SPI_CLK, SPI_IN
     TRISB = 0x07;
-    TRISC = 0x10;
-    TRISA = 0x10;
+    // For USART need R7 in, R6 out; need R4 in for something
+    TRISC = 0x90;
     
     ANSELB = 0x00;
+    ANSELC = 0x00;
     
     SPI1_Init();
     SPI1_Enable();
-    
+        
     while(1)
     {
         spi_Send_Read(0x78);
@@ -51,7 +55,15 @@ void main(void)
     }
 }
 
-void delay(int s) {
+void testUsart()
+{
+    unsigned int baud = (_XTAL_FREQ - BAUDRATE*16)/(BAUDRATE*16);
+    OpenUSART1(baud);
+    char c = getc1USART();
+}
+
+void delay(int s)
+{
     int a = 0;
     int i;
     for (i = 0; i < s; i++) {

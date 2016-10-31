@@ -40,10 +40,15 @@
  #define    SPI1_Init()            {SSP2STAT = 0x40; SSP2CON1 = SLV_SSON;}
 
 /* TODO Application specific user parameters used in user.c may go here */
+/* SPI */
 #define UPLOAD_REQ0 0xAB
 #define UPLOAD_REQ1 0xCD
 #define UPLOAD_ACK0	0xEF
 #define UPLOAD_ACK1 0x01
+
+/* USART */
+#define _XTAL_FREQ 20000000
+#define BAUDRATE 19200
 
 /******************************************************************************/
 /* User Function Prototypes                                                   */

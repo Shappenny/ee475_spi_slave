@@ -1,0 +1,3 @@
+Error[1027] C:\Users\ee475\MPLABXProjects\ee475_spi_slave\pic18_spi_slave.X\usart_pic16.c 26 : unable to locate 'stdint.h'
+Error[1027] C:\Users\ee475\MPLABXProjects\ee475_spi_slave\pic18_spi_slave.X\usart_pic16.c 27 : unable to locate 'xc.h'
+Error[1027] C:\Users\ee475\MPLABXProjects\ee475_spi_slave\pic18_spi_slave.X\usart_pic16.h 28 : unable to locate 'stdint.h'
