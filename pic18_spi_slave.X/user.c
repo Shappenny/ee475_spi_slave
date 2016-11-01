@@ -28,7 +28,7 @@ extern unsigned char uploadReq0, uploadReq1;
 
 void OpenUSART1(unsigned int spbrg);
 char getc1USART(void);
-char DataRdyUSART1(void);
+char DataRdy1USART(void);
 void gets1USART(char *buffer, unsigned char len);
 char Busy1USART(void);
 void putrs1USART(const rom char *data);
@@ -103,7 +103,7 @@ unsigned char spi_Send_Read(unsigned char byte)
 //    TXSTA1bits.SYNC = 0;    // Asynchronous mode
 //    BAUDCON1bits.BRG16 = 1;
 //    SPBRG = 511;
-//    DataRdyUSART1();
+//    DataRdy1USART();
 //    return 1;
 //}
 /* The following USART code was taken from http://www.microchip.com/forums/m608981.aspx 
@@ -113,20 +113,34 @@ unsigned char spi_Send_Read(unsigned char byte)
 // asychronous 8 bit mode only 
 void OpenUSART1(unsigned int spbrg)
 { 
+    /* Enable interrupt priority */ 
+    //RCONbits.IPEN = 1; 
+    /* Make receive interrupt high priority */ 
+    //IPR1bits.RCIP = 1; 
+    /* Enable all high priority interrupts */ 
+    //ANSELC=0; 
+    //ANSELA=0; 
+    //INTCONbits.PEIE_GIEL = 1; 
+    //INTCONbits.GIEH = 1; 
+    //TRISAbits.RA0 = 0; 
+    //TRISAbits.RA1= 0; 
+    //PORTAbits.RA0 = 0; 
+    //PORTAbits.RA1 = 0; 
+
     TXSTA1 = 0;          // Reset USART registers to POR state 
     RCSTA1 = 0; 
     SPBRG1 = spbrg; 
     SPBRGH1 = 0; 
     TXSTA1bits.BRGH = 1;  // Baud rate select 
     TXSTA1bits.SYNC = 0;    // Asynchronous mode
-    BAUDCON1bits.BRG16 = 1; 
-    PIE1bits.RC1IE = 1; 
-    TRISCbits.RC6 = 1; 
-    TRISCbits.RC7 = 1; 
+    //BAUDCON1bits.BRG16 = 1; 
+    //PIE1bits.RC1IE = 1; 
+    //TRISCbits.RC6 = 1; 
+    //TRISCbits.RC7 = 1; 
     RCSTA1bits.CREN = 1;  // Enable receiver 
     TXSTA1bits.TXEN = 1;  // Enable transmitter 
     RCSTA1bits.SPEN = 1; 
-} 
+}
 
 char getc1USART (void) 
 { 
@@ -147,7 +161,7 @@ void putc1USART (char data)
   TXREG1 = data;      // Write the data byte to the USART2 
 }	 
 
-char DataRdyUSART1(void) 
+char DataRdy1USART(void) 
 { 
   if(PIR1bits.RC1IF)  // If RCIF is set 
     return 1;  // Data is available, return TRUE 
@@ -161,7 +175,7 @@ void gets1USART(char *buffer, unsigned char len)
 
   for(i=0;i<len;i++)  // Only retrieve len characters 
   { 
-    while(!DataRdyUSART1());// Wait for data to be received 
+    while(!DataRdy1USART());// Wait for data to be received 
 
     data = getc1USART();    // Get a character from the USART 
                            // and save in the string 
@@ -174,7 +188,7 @@ char Busy1USART(void)
 { 
   if(!TXSTA1bits.TRMT) // Is the transmit shift register empty 
     return 1;          // No, return FALSE 
-    return 0;            // Return TRUE 
+  return 0;            // Return TRUE 
 } 
 
 void putrs1USART(const rom char *data) 
