@@ -131,9 +131,9 @@ void OpenUSART1(unsigned int spbrg)
     RCSTA1 = 0; 
     SPBRG1 = spbrg; 
     SPBRGH1 = 0; 
-    TXSTA1bits.BRGH = 1;  // Baud rate select 
+    TXSTA1bits.BRGH = 0;  // Baud rate select 
     TXSTA1bits.SYNC = 0;    // Asynchronous mode
-    //BAUDCON1bits.BRG16 = 1; 
+    BAUDCON1bits.BRG16 = 0; 
     //PIE1bits.RC1IE = 1; 
     //TRISCbits.RC6 = 1; 
     //TRISCbits.RC7 = 1; 

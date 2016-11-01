@@ -37,18 +37,21 @@ unsigned char spi_Send_Read(unsigned char byte);
 
 void main(void)
 {    
-    unsigned int baudRate = (20000000 - 19200*16)/(19200*16);
+    unsigned int baudRate = (20000000 / (19200 / 64)) - 1;
 
     TRISA = 0x10;
     // Need B0, B1, B2 as input for SPI_SS, SPI_CLK, SPI_IN
     TRISB = 0x07;
     // For USART need R7 in, R6 out; need R4 in for something else
-    TRISC = 0xD0;
+    //  1001 0000
+    TRISC = 0x90;
     
     ANSELB = 0x00;
     ANSELC = 0x00;
     
-    LATCbits.LATC6 = 1;
+    LATCbits.LATC0 = 1;
+    delay(100000);
+    PORTCbits.RC6 = 1;
     delay(100000);
     
     //SPI1_Init();
@@ -70,12 +73,16 @@ void testUSART()
     char c = 27;
     while (1)//(DataRdy1USART())
     {
-        //char c = getc1USART();
         putc1USART('U');
-        LATCbits.LATC6 = 1;
+        //LATCbits.LATC6 = 1;
+        //PORTCbits.RX1 = 1;
+        //PORTCbits.RC0 = 1;
         delay(10000);
-        if (c == 128)
-            c = 27;
+        //PORTCbits.RX1 = 0;
+        //PORTCbits.RC0 = 0;
+        //delay(10);
+        
+        
     }
 }
 

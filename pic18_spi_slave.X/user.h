@@ -14,12 +14,6 @@
 //#define SPI_IRQ		PORTBbits.RB0		/* IRQ input pin, PORTB pin 0 */
 #define SPI_SCALE	4					/* postscaling of signal */
 #define SYNC_SEQ	0x2C8				/* SPI synchronize sequence sent before data */
-
-// MSSP1: SPI1 (MCP923S17 + LCD / Serial EEPROM ) 
- #define    SPI1_TRIS    TRISCbits 
- #define    SPI1_CLK    RC3     
- #define    SPI1_SDI    RC4 
- #define    SPI1_SDO    RC5 
  
  // INIT I/O for MSSP1 SPI bus, includes I/O for attached devices 
  #define    INIT_SPI1_IO()    {SPI_SCK=0; SPI_SO=0; SPI_SI=1;} 
@@ -33,8 +27,8 @@
  #define    SPI1_Enable()       {SSP2CON1bits.SSPEN=1;} 
  #define    SPI1_Disable()		{SSP2CON1bits.SSPEN=0;} 
  // SPI1 interrupt control 
- #define SPI1_IntEnable()		{PIR1bits.SSP1IF = 0; PIE1bits.SSP1IE=1; INTCONbits.PEIE = 1;}
- #define SPI1_IntDisable()    	{PIE1bits.SSP1IE=0;}
+ //#define SPI1_IntEnable()		{PIR1bits.SSP1IF = 0; PIE1bits.SSP1IE=1; INTCONbits.PEIE = 1;}
+ //#define SPI1_IntDisable()    	{PIE1bits.SSP1IE=0;}
  
  // Init MSSP1 in SPI mode and I/O pins 
  #define    SPI1_Init()            {SSP2STAT = 0x40; SSP2CON1 = SLV_SSON;}
