@@ -64,12 +64,18 @@ void main(void)
 void testUSART()
 {
     char c = 'A';  // A = 65 = 0x41
-    while (1)//(DataRdy1USART())
+    while (1)
     {
-        putc1USART(c++);
-        delay(100000);
-        if (c == 'Z')
-            c = 'A';
+        if (DataRdy1USART()) 
+        {
+            c = getc1USART();
+            delay(1000);
+            putc1USART(c);
+        }
+//        putc1USART(c++);
+//        delay(100000);
+//        if (c == 'Z')
+//            c = 'A';
         
     }
 }
