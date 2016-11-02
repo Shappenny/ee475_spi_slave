@@ -21,18 +21,13 @@
 
 #include "usart.h"
 #include "user.h"
+//#include <stdint.h>
 #include "system.h"
 
 extern unsigned char nextByte;
 extern unsigned char uploadReq0, uploadReq1;
 
-void OpenUSART1(unsigned int spbrg);
-char getc1USART(void);
-char DataRdy1USART(void);
-void gets1USART(char *buffer, unsigned char len);
-char Busy1USART(void);
-void putrs1USART(const rom char *data);
-void puts1USART(char *data);
+char getEvenParity(char data);
 
 
 /******************************************************************************/
@@ -111,38 +106,25 @@ unsigned char spi_Send_Read(unsigned char byte)
  */
 
 // asychronous 8 bit mode only 
-void OpenUSART1(unsigned int spbrg)
+void OpenUSART1(unsigned int rate)
 { 
-    /* Enable interrupt priority */ 
-    //RCONbits.IPEN = 1; 
-    /* Make receive interrupt high priority */ 
-    //IPR1bits.RCIP = 1; 
-    /* Enable all high priority interrupts */ 
-    //ANSELC=0; 
-    //ANSELA=0; 
-    //INTCONbits.PEIE_GIEL = 1; 
-    //INTCONbits.GIEH = 1; 
-    //TRISAbits.RA0 = 0; 
-    //TRISAbits.RA1= 0; 
-    //PORTAbits.RA0 = 0; 
-    //PORTAbits.RA1 = 0; 
-
-    TXSTA1 = 0;          // Reset USART registers to POR state 
-    RCSTA1 = 0; 
-    SPBRG1 = spbrg; 
-    SPBRGH1 = 0; 
-    TXSTA1bits.BRGH = 0;  // Baud rate select 
-    TXSTA1bits.SYNC = 0;    // Asynchronous mode
-    BAUDCON1bits.BRG16 = 0; 
-    //PIE1bits.RC1IE = 1; 
-    //TRISCbits.RC6 = 1; 
-    //TRISCbits.RC7 = 1; 
+    // Reset USART registers to POR state
+    TXSTA1 = 0;
+    RCSTA1 = 0;
+    // Set baud rate
+    SPBRG1 = rate;
+    SPBRGH1 = 0;
+    TXSTA1bits.BRGH = 1;  // Baud rate select
+    TXSTA1bits.SYNC = 0;  // Asynchronous mode
+    TXSTA1bits.TX9 = 1;  // Enable 9th bit for parity
+    BAUDCON1bits.BRG16 = 0;
+    RCSTA1bits.ADDEN = 0;
     RCSTA1bits.CREN = 1;  // Enable receiver 
     TXSTA1bits.TXEN = 1;  // Enable transmitter 
-    RCSTA1bits.SPEN = 1; 
+    RCSTA1bits.SPEN = 1;  // Enable USART1
 }
 
-char getc1USART (void) 
+char getc1USART(void) 
 { 
   char flags; 
   char data;   // Holds received data 
@@ -154,11 +136,14 @@ char getc1USART (void)
       RCSTA1bits.CREN = 1; 
   } 
   return (data);                     // Return the received data 
-} 
+}
 
-void putc1USART (char data) 
+void putc1USART(char data) 
 { 
-  TXREG1 = data;      // Write the data byte to the USART2 
+    // Compute and transmit an even parity bit as 9th bit
+    TXSTA1bits.TX9D = getEvenParity(data);
+    // Write the data byte to the USART1
+    TXREG1 = data;
 }	 
 
 char DataRdy1USART(void) 
@@ -208,3 +193,16 @@ void puts1USART( char *data)
     putc1USART(*data); 
   } while( *data++ ); 
 } 
+
+/* Code adapted from user rpg7 on
+ * http://www.microchip.com/forums/m587239.aspx */
+char getEvenParity(char data)
+{
+    // 10101010 ^ 00010011 = 10111001
+    // 10111001 ^ 00100111 = 10011110
+    // 10011110 & 00000001 = 00000000
+    data ^= ((data >> 4) | (data << 4));
+    data ^= (data >> 2);
+    data ^= (data >> 1);
+    return (data & 0x01);
+}

@@ -29,15 +29,13 @@ unsigned char uploadReq0, uploadReq1;
 /******************************************************************************/
 /* Main Program                                                               */
 /******************************************************************************/
-void delay(int s);
-void testUSART();
-unsigned char spi_Send_Read(unsigned char byte);
-//void OpenUSART1(unsigned int n);
-//char getc1USART();
+void delay(unsigned long s);
+void testUSART(void);
 
 void main(void)
 {    
-    unsigned int baudRate = (20000000 / (19200 / 64)) - 1;
+    // 19.2Kb/s: baudRate = ((18432000 / (19200 * 16)) - 1) / 2, BRGH = 0
+    unsigned int baudRate = ((18432000 / (19200 * 16)) - 1) / 2;
 
     TRISA = 0x10;
     // Need B0, B1, B2 as input for SPI_SS, SPI_CLK, SPI_IN
@@ -48,11 +46,6 @@ void main(void)
     
     ANSELB = 0x00;
     ANSELC = 0x00;
-    
-    LATCbits.LATC0 = 1;
-    delay(100000);
-    PORTCbits.RC6 = 1;
-    delay(100000);
     
     //SPI1_Init();
     //SPI1_Enable();
@@ -70,26 +63,21 @@ void main(void)
 
 void testUSART()
 {
-    char c = 27;
+    char c = 'A';  // A = 65 = 0x41
     while (1)//(DataRdy1USART())
     {
-        putc1USART('U');
-        //LATCbits.LATC6 = 1;
-        //PORTCbits.RX1 = 1;
-        //PORTCbits.RC0 = 1;
-        delay(10000);
-        //PORTCbits.RX1 = 0;
-        //PORTCbits.RC0 = 0;
-        //delay(10);
-        
+        putc1USART(c++);
+        delay(100000);
+        if (c == 'Z')
+            c = 'A';
         
     }
 }
 
-void delay(int s)
+void delay(unsigned long s)
 {
-    int a = 0;
-    int i;
+    unsigned long a = 0;
+    unsigned long i;
     for (i = 0; i < s; i++) {
         a++;
     }

@@ -47,7 +47,16 @@
 /******************************************************************************/
 /* User Function Prototypes                                                   */
 /******************************************************************************/
-
+/* SPI */
 unsigned char SpiRead(void);
 void SpiWrite(unsigned char byte);
 unsigned char spi_Send_Read(unsigned char byte);
+/* USART */
+void OpenUSART1(unsigned int spbrg);
+char getc1USART(void);
+void putc1USART(char data);
+char DataRdy1USART(void);
+void gets1USART(char *buffer, unsigned char len);
+char Busy1USART(void);
+void putrs1USART(const rom char *data);
+void puts1USART(char *data);
