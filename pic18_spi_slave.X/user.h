@@ -16,7 +16,7 @@
 #define SYNC_SEQ	0x2C8				/* SPI synchronize sequence sent before data */
  
  // INIT I/O for MSSP1 SPI bus, includes I/O for attached devices 
- #define    INIT_SPI1_IO()    {SPI_SCK=0; SPI_SO=0; SPI_SI=1;} 
+ #define    INIT_SPI1_IO()    	{SPI_SCK=0; SPI_SO=0; SPI_SI=1;} 
  
  // ------------------ 
  // SPI Configuration 
@@ -31,18 +31,20 @@
  //#define SPI1_IntDisable()    	{PIE1bits.SSP1IE=0;}
  
  // Init MSSP1 in SPI mode and I/O pins 
- #define    SPI1_Init()            {SSP2STAT = 0x40; SSP2CON1 = SLV_SSON;}
+ #define    SPI1_Init()         {SSP2STAT = 0x40; SSP2CON1 = SLV_SSON;}
 
 /* TODO Application specific user parameters used in user.c may go here */
-/* SPI */
-#define UPLOAD_REQ0 0xAB
-#define UPLOAD_REQ1 0xCD
-#define UPLOAD_ACK0	0xEF
-#define UPLOAD_ACK1 0x01
+/* Commands */
+#define START_RX 	0xA2
+#define START_ACK 	0xA3
+#define STOP_RX 	0xB2
+#define STOP_ACK 	0xB3
+#define UPLOAD_REQ 	0xC2
+#define UPLOAD_ACK	0xC3
 
 /* USART */
-#define _XTAL_FREQ 20000000
-#define BAUDRATE 19200
+#define _XTAL_FREQ 	20000000
+#define BAUDRATE 	19200
 
 /******************************************************************************/
 /* User Function Prototypes                                                   */
@@ -50,7 +52,7 @@
 /* SPI */
 unsigned char SpiRead(void);
 void SpiWrite(unsigned char byte);
-unsigned char spi_Send_Read(unsigned char byte);
+unsigned char spiSendRead(unsigned char byte);
 /* USART */
 void OpenUSART1(unsigned int spbrg);
 char getc1USART(void);

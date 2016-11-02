@@ -55,7 +55,7 @@ void main(void)
         
     while(1)
     {
-        //spi_Send_Read(0x78);
+        //spiSendRead(0x78);
         //delay(10000);
         //testUSART();
     }
