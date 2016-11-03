@@ -24,7 +24,7 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 //unsigned char nextByte;  // Holds next sending byte for acknowledgement
-unsigned char roverUploadReq, canSendUART;
+unsigned char roverUploadReq, canSendUART, startCollection, stopCollection;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -56,15 +56,27 @@ void main(void)
     unsigned char cmd, data;
     while(1)
     {
+        char flag = 1;
         // Receive from USART if data is available
-//        if (DataRdy1USART()) 
-//        {
-//            cmd = readcUSART();            
-//        }
+        while (DataRdy1USART() && flag) 
+        {
+            cmd = readcUSART();
+            // Parse command
+            if (cmd == START_RX)
+            {
+                startCollection = 1;
+                //stopCollection = 0;
+            } else if (cmd == STOP_RX)
+            {
+                //startCollection = 0;
+                stopCollection = 1;
+            }
+            flag = 0;
+        }
         // Send/read SPI
         //data = spiSendRead(SPI_IDLE);
         spiSendRead(0x78);
-        delay(1000);
+        delay(10);
         // If rover requested SPI upload, store incoming data bytes in SRAM
         if (!roverUploadReq)
         {
@@ -73,22 +85,22 @@ void main(void)
             {
                 data = spiSendRead(SPI_IDLE);
                 sram_write(i, data);
-                delay(100);
+                delay(10);
             }
             // Upload complete
             roverUploadReq = 0;
         }
-//        // Upload data to land station if allowed
-//        if (canSendUART)
-//        {
-//            int i;
-//            for (i = 0; i < 1024; ++i)
-//            {
-//                data = sram_read(i);
-//                putc1USART(data);
-//                delay(10);
-//            }
-//        }
+        // Upload data to land station if allowed
+        if (canSendUART)
+        {
+            int i;
+            for (i = 0; i < 1024; ++i)
+            {
+                data = sram_read(i);
+                putc1USART(data);
+                delay(10);
+            }
+        }
         //delay(10000);
         //testUSART();
     }

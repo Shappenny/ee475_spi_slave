@@ -165,6 +165,10 @@ char readcUSART()
 // asynchronous 8 bit mode only 
 void OpenUSART1(unsigned int rate)
 { 
+    // Configure interrupts
+    PIE3bits.RC2IE = 1;
+    INTCONbits.PEIE_GIEL = 1;
+    INTCONbits.GIEH = 1;
     // Reset USART registers to POR state
     TXSTA1 = 0;
     RCSTA1 = 0;
@@ -187,6 +191,7 @@ char getc1USART(void)
   char data;        // Holds received data
   flags = RCSTA1;
   data = RCREG1;    // Read data
+  RCREG1 = 0x00;
   if (RCSTA1bits.OERR)
   { 
       RCSTA1bits.CREN = 0;
