@@ -35,12 +35,12 @@
 
 /* TODO Application specific user parameters used in user.c may go here */
 /* Commands */
-#define START_RX 	0xA2
-#define START_ACK 	0xA3
-#define STOP_RX 	0xB2
-#define STOP_ACK 	0xB3
-#define UPLOAD_REQ 	0xC2
-#define UPLOAD_ACK	0xC3
+#define START_RX 	0x53  // S
+#define START_ACK 	0x54  // T
+#define STOP_RX 	0x45  // E
+#define STOP_ACK 	0x46  // F
+#define UPLOAD_REQ 	0x55  // U
+#define UPLOAD_ACK	0x56  // V
 
 /* USART */
 #define _XTAL_FREQ 	20000000
@@ -54,6 +54,7 @@ unsigned char SpiRead(void);
 void SpiWrite(unsigned char byte);
 unsigned char spiSendRead(unsigned char byte);
 /* USART */
+char readcUSART();
 void OpenUSART1(unsigned int spbrg);
 char getc1USART(void);
 void putc1USART(char data);

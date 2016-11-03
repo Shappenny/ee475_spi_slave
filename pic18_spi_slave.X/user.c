@@ -25,6 +25,8 @@
 
 extern unsigned char nextByte;
 extern unsigned char uploadReq;
+extern unsigned char START_COLLECTION;
+extern unsigned char STOP_COLLECTION;
 
 char getEvenParity(char data);
 
@@ -37,6 +39,9 @@ char getEvenParity(char data);
 
 void InitApp(void)
 {
+    /* Define global vars */
+    
+    
     /* TODO Initialize User Ports/Peripherals/Project here */
 
     /* Setup analog functionality and port direction */
@@ -65,26 +70,59 @@ unsigned char spiSendRead(unsigned char byte)
 {
     SSP2BUF = nextByte;
     while (!SSP2STATbits.BF);
-    // Check for first upload request
+    // Check for upload request
     if (!uploadReq)
     {
         uploadReq = (SSP2BUF == UPLOAD_REQ);
-        // Upload request has been received, send final acknowledgement
+        // Upload request has been received, send acknowledgement
         if (uploadReq)
         {
             nextByte = UPLOAD_ACK;
             uploadReq = 0;
         }
+    // Check for UART commands
+    } else if (START_COLLECTION)
+    {
+        // Send command to rover
+        nextByte = START_RX;
+        START_COLLECTION = 0;
+    } else if (STOP_COLLECTION)
+    {
+        // Send command to rover
+        nextByte = STOP_RX;
+        STOP_COLLECTION = 0;
     }
 
     return SSP2BUF;
+}
+
+char readcUSART()
+{
+    char c = getc1USART();
+    // Check for commands from land station
+    if (c == START_RX)
+    {
+        putc1USART(START_ACK);
+        //puts1USART("Data collection started\n\0");
+        START_COLLECTION = 1;
+    } else if (c == STOP_RX)
+    {
+        putc1USART(STOP_ACK);
+        //puts1USART("Data collection started\n\0");
+        STOP_COLLECTION = 1;
+    } else if (c == UPLOAD_REQ)
+    {
+        putc1USART(UPLOAD_ACK);
+        uploadReq = 1;
+    }
+    return c;
 }
 
 /* The following USART code was taken from http://www.microchip.com/forums/m608981.aspx 
  * Credit to user roish
  */
 
-// asychronous 8 bit mode only 
+// asynchronous 8 bit mode only 
 void OpenUSART1(unsigned int rate)
 { 
     // Reset USART registers to POR state
@@ -170,7 +208,9 @@ void puts1USART(char *data)
   {  // Transmit a byte 
     while(Busy1USART()); 
     putc1USART(*data); 
-  } while(*data++); 
+    ++data;
+    delay(100);
+  } while(*data != '\0'); 
 } 
 
 /* Code adapted from user rpg7 on

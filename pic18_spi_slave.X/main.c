@@ -24,7 +24,7 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 unsigned char nextByte;  // Holds next sending byte for acknowledgement
-unsigned char uploadReq0, uploadReq1;
+unsigned char uploadReq, START_COLLECTION, STOP_COLLECTION;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -68,9 +68,9 @@ void testUSART()
     {
         if (DataRdy1USART()) 
         {
-            c = getc1USART();
-            delay(1000);
-            putc1USART(c);
+            c = readcUSART();
+            delay(10000);
+            //putc1USART(c);
         }
 //        putc1USART(c++);
 //        delay(100000);
