@@ -26,6 +26,7 @@ extern unsigned char roverUploadReq, canSendUART;
 unsigned char nextByte;
 unsigned char startCollection, stopCollection;
 unsigned char PORTA_shadow, PORTB_shadow, PORTC_shadow;
+unsigned char uploadReq0, uploadReq1;
 
 
 /******************************************************************************/
@@ -42,6 +43,8 @@ void InitApp(void)
     nextByte = 0;
     startCollection = 0;
     stopCollection = 0;
+    uploadReq0 = 0;
+    uploadReq1 = 0;
     
     // SRAM
     PORTA_shadow = 0x00 | (1 << 5);
@@ -91,8 +94,24 @@ void SpiWrite(unsigned char byte)
 
 unsigned char spiSendRead(unsigned char byte)
 {
+//    SSP2BUF = nextByte;
+//    while (!SSP2STATbits.BF);
+//    if (!uploadReq0 && !uploadReq1)
+//    {
+//        uploadReq0 = (SSP2BUF == UPLOAD_REQ0);
+//        nextByte = UPLOAD_ACK1; //byte;
+//    } else if (uploadReq0 && !uploadReq1)
+//    {
+//        uploadReq1 = (SSP2BUF == UPLOAD_REQ1);
+//        nextByte = byte; //UPLOAD_ACK0;
+//    } else 
+//    {
+//        nextByte = UPLOAD_ACK0; //UPLOAD_ACK1;
+//    }
+    
     SSP2BUF = nextByte;
     while (!SSP2STATbits.BF);
+    
     // Check for upload request
     if (SSP2BUF == UPLOAD_REQ)
     {
@@ -112,7 +131,7 @@ unsigned char spiSendRead(unsigned char byte)
         stopCollection = 0;
     } else
     {
-        nextByte = SPI_IDLE;
+        nextByte = byte;
     }
 
     return SSP2BUF;

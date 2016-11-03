@@ -57,36 +57,38 @@ void main(void)
     while(1)
     {
         // Receive from USART if data is available
-        if (DataRdy1USART()) 
-        {
-            cmd = readcUSART();            
-        }
-        // Send/read SPI
-//        data = spiSendRead(SPI_IDLE);
-//        // If rover requested SPI upload, store incoming data bytes in SRAM
-//        if (!roverUploadReq)
+//        if (DataRdy1USART()) 
 //        {
-//            int i;
-//            for (i = 0; i < 1024; ++i)
-//            {
-//                data = spiSendRead(SPI_IDLE);
-//                sram_write(i, data);
-//                delay(100);
-//            }
-//            // Upload complete
-//            roverUploadReq = 0;
+//            cmd = readcUSART();            
 //        }
-        // Upload data to land station if allowed
-        if (canSendUART)
+        // Send/read SPI
+        //data = spiSendRead(SPI_IDLE);
+        spiSendRead(0x78);
+        delay(1000);
+        // If rover requested SPI upload, store incoming data bytes in SRAM
+        if (!roverUploadReq)
         {
             int i;
             for (i = 0; i < 1024; ++i)
             {
-                data = sram_read(i);
-                putc1USART(data);
-                delay(10);
+                data = spiSendRead(SPI_IDLE);
+                sram_write(i, data);
+                delay(100);
             }
+            // Upload complete
+            roverUploadReq = 0;
         }
+//        // Upload data to land station if allowed
+//        if (canSendUART)
+//        {
+//            int i;
+//            for (i = 0; i < 1024; ++i)
+//            {
+//                data = sram_read(i);
+//                putc1USART(data);
+//                delay(10);
+//            }
+//        }
         //delay(10000);
         //testUSART();
     }

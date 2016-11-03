@@ -41,6 +41,10 @@
 #define STOP_ACK 	0x46  // F
 #define UPLOAD_REQ 	0x55  // U
 #define UPLOAD_ACK	0x56  // V
+#define UPLOAD_REQ0 	0xC2
+#define UPLOAD_ACK0	0xC3
+#define UPLOAD_REQ1 	0xD2
+#define UPLOAD_ACK1	0xD3
 
 /* USART */
 #define _XTAL_FREQ 	20000000
