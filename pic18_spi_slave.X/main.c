@@ -24,7 +24,7 @@
 /* User Global Variable Declaration                                           */
 /******************************************************************************/
 unsigned char nextByte;  // Holds next sending byte for acknowledgement
-unsigned char uploadReq, START_COLLECTION, STOP_COLLECTION;
+unsigned char roverUploadReq, canSendUART;
 
 /******************************************************************************/
 /* Main Program                                                               */
@@ -51,11 +51,40 @@ void main(void)
     //SPI1_Enable();
     OpenUSART1(baudRate);
     
-    testUSART();
-        
+    //testUSART();
+    
+    char cmd, data;
     while(1)
     {
-        //spiSendRead(0x78);
+        // Receive from USART if data is available
+        if (DataRdy1USART()) 
+        {
+            cmd = readcUSART();            
+        }
+        // Send/read SPI
+        data = spiSendRead(SPI_IDLE);
+        // If rover requested SPI upload, store incoming data bytes in SRAM
+        if (!roverUploadReq)
+        {
+            for (int i = 0; i < 1024; ++i)
+            {
+                data = spiSendRead(SPI_IDLE, &cmdRx);
+                sram_write(i, data);
+                delay(100);
+            }
+            // Upload complete
+            roverUploadReq = 0;
+        }
+        // Upload data to land station if allowed
+        if (canSendUART)
+        {
+            for (int i = 0; i < 1024; ++i)
+            {
+                data = sram_read(i);
+                putc1USART(data);
+                delay(100);
+            }
+        }
         //delay(10000);
         //testUSART();
     }

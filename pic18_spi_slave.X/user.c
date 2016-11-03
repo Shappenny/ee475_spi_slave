@@ -23,10 +23,8 @@
 //#include <stdint.h>
 #include "system.h"
 
-extern unsigned char nextByte;
-extern unsigned char uploadReq;
-extern unsigned char START_COLLECTION;
-extern unsigned char STOP_COLLECTION;
+extern unsigned char roverUploadReq, canSendUart, nextByte;
+unsigned char startCollection, stopCollection;
 
 char getEvenParity(char data);
 
@@ -40,8 +38,12 @@ char getEvenParity(char data);
 void InitApp(void)
 {
     /* Define global vars */
-    
-    
+    roverUploadReq = 0;
+    canSendUART = 0;
+    nextByte = 0;
+    startCollection = 0;
+    stopCollection = 0;
+
     /* TODO Initialize User Ports/Peripherals/Project here */
 
     /* Setup analog functionality and port direction */
@@ -51,6 +53,22 @@ void InitApp(void)
     /* Configure the IPEN bit (1=on) in RCON to turn on/off int priorities */
 
     /* Enable interrupts */
+}
+
+void uploadToLand() {
+    // Upload to land station, if we have permission
+    //  while we wait for the ADC reading
+    if (canSendUart)
+    {
+        unsigned char data;
+        for (int i = 0; i < 1024; i++)
+        {
+            data = sram_read(i * activeBufferId);
+            putc1USART(data);
+            delay(100);
+        }
+        canSendUart = 0;
+    } 
 }
 
 unsigned char SpiRead(void)
@@ -71,26 +89,25 @@ unsigned char spiSendRead(unsigned char byte)
     SSP2BUF = nextByte;
     while (!SSP2STATbits.BF);
     // Check for upload request
-    if (!uploadReq)
+    if (SSP2BUF == UPLOAD_REQ)
     {
-        uploadReq = (SSP2BUF == UPLOAD_REQ);
         // Upload request has been received, send acknowledgement
-        if (uploadReq)
-        {
-            nextByte = UPLOAD_ACK;
-            uploadReq = 0;
-        }
-    // Check for UART commands
-    } else if (START_COLLECTION)
+        nextByte = UPLOAD_ACK;
+        roverUploadReq = 1;
+    // Check for UART commands to relay to rover
+    } else if (startCollection)
     {
         // Send command to rover
         nextByte = START_RX;
-        START_COLLECTION = 0;
-    } else if (STOP_COLLECTION)
+        startCollection = 0;
+    } else if (stopCollection)
     {
         // Send command to rover
         nextByte = STOP_RX;
-        STOP_COLLECTION = 0;
+        stopCollection = 0;
+    } else
+    {
+        nextByte = SPI_IDLE;
     }
 
     return SSP2BUF;
@@ -104,16 +121,16 @@ char readcUSART()
     {
         putc1USART(START_ACK);
         //puts1USART("Data collection started\n\0");
-        START_COLLECTION = 1;
+        startCollection = 1;
     } else if (c == STOP_RX)
     {
         putc1USART(STOP_ACK);
         //puts1USART("Data collection started\n\0");
-        STOP_COLLECTION = 1;
+        stopCollection = 1;
     } else if (c == UPLOAD_REQ)
     {
         putc1USART(UPLOAD_ACK);
-        uploadReq = 1;
+        canSendUart = 1;
     }
     return c;
 }
@@ -121,7 +138,6 @@ char readcUSART()
 /* The following USART code was taken from http://www.microchip.com/forums/m608981.aspx 
  * Credit to user roish
  */
-
 // asynchronous 8 bit mode only 
 void OpenUSART1(unsigned int rate)
 { 
@@ -224,4 +240,41 @@ char getEvenParity(char data)
     data ^= (data >> 2);
     data ^= (data >> 1);
     return (data & 0x01);
+}
+
+unsigned char sram_read(unsigned int address)
+{
+    // we = 1
+    PORTA_shadow = PORTA_shadow | (1 << 2);
+    PORTA = PORTA_shadow;
+    address_select(address);
+    
+    
+    // oe = 0
+//    PORTA_shadow = PORTA_shadow & ~(1 << 3);
+//    PORTA = PORTA_shadow;
+    unsigned char data =  get_data_p2s_register();
+//    // oe = 1
+//    PORTA_shadow = PORTA_shadow | (1 << 3);
+//    PORTA = PORTA_shadow;
+    return data;
+
+}
+
+void sram_write(unsigned int data, unsigned int address)
+{
+    // oe = 1
+    PORTA_shadow = PORTA_shadow | (1 << 3);
+    PORTA = PORTA_shadow;
+    address_select(address);
+    set_s2p_shift_register(data);
+    // we = 0
+    PORTA_shadow = PORTA_shadow & ~(1 << 2);
+    PORTA = PORTA_shadow;
+    delay(1000);
+    // we = 1
+    PORTA_shadow = PORTA_shadow | (1 << 2);
+    PORTA = PORTA_shadow;
+    delay(1000);
+    return;
 }

@@ -46,13 +46,21 @@
 #define _XTAL_FREQ 	20000000
 #define BAUDRATE 	19200
 
+/* SPI */
+#define SPI_IDLE 0x01
+
 /******************************************************************************/
 /* User Function Prototypes                                                   */
 /******************************************************************************/
+/* SRAM */
+void sram_write(unsigned int data, unsigned int address);
+unsigned char sram_read(unsigned int address);
+
 /* SPI */
 unsigned char SpiRead(void);
 void SpiWrite(unsigned char byte);
 unsigned char spiSendRead(unsigned char byte);
+
 /* USART */
 char readcUSART();
 void OpenUSART1(unsigned int spbrg);
