@@ -62,12 +62,20 @@ void SpiWrite(unsigned char byte);
 unsigned char spiSendRead(unsigned char byte);
 
 /* USART */
-char readcUSART();
+char readcUSART(void);
 void OpenUSART1(unsigned int spbrg);
 char getc1USART(void);
 void putc1USART(char data);
 char DataRdy1USART(void);
 void gets1USART(char *buffer, unsigned char len);
 char Busy1USART(void);
-void putrs1USART(const rom char *data);
+void putrs1USART(const char *data);
 void puts1USART(char *data);
+
+char getEvenParity(char data);
+void address_select(unsigned int n);
+unsigned char get_data_p2s_register();
+void set_s2p_shift_register(unsigned int data);
+void toggle_buffer_clock(void);
+void delay(unsigned long s);
+

@@ -18,15 +18,14 @@
 #endif
 
 
-#include "usart.h"
 #include "user.h"
 //#include <stdint.h>
 #include "system.h"
 
-extern unsigned char roverUploadReq, canSendUart, nextByte;
+extern unsigned char roverUploadReq, canSendUART;
+unsigned char nextByte;
 unsigned char startCollection, stopCollection;
-
-char getEvenParity(char data);
+unsigned char PORTA_shadow, PORTB_shadow, PORTC_shadow;
 
 
 /******************************************************************************/
@@ -43,6 +42,11 @@ void InitApp(void)
     nextByte = 0;
     startCollection = 0;
     stopCollection = 0;
+    
+    // SRAM
+    PORTA_shadow = 0x00 | (1 << 5);
+    PORTB_shadow = 0x00;
+    PORTC_shadow = 0x00;
 
     /* TODO Initialize User Ports/Peripherals/Project here */
 
@@ -58,16 +62,17 @@ void InitApp(void)
 void uploadToLand() {
     // Upload to land station, if we have permission
     //  while we wait for the ADC reading
-    if (canSendUart)
+    if (canSendUART)
     {
         unsigned char data;
-        for (int i = 0; i < 1024; i++)
+        int i;
+        for (i = 0; i < 1024; i++)
         {
-            data = sram_read(i * activeBufferId);
+            data = sram_read(i);
             putc1USART(data);
             delay(100);
         }
-        canSendUart = 0;
+        canSendUART = 0;
     } 
 }
 
@@ -130,7 +135,7 @@ char readcUSART()
     } else if (c == UPLOAD_REQ)
     {
         putc1USART(UPLOAD_ACK);
-        canSendUart = 1;
+        canSendUART = 1;
     }
     return c;
 }
@@ -209,7 +214,7 @@ char Busy1USART(void)
   return 0;            // Return TRUE 
 } 
 
-void putrs1USART(const rom char *data) 
+void putrs1USART(const char *data) 
 { 
   do 
   {  // Transmit a byte 
@@ -248,12 +253,11 @@ unsigned char sram_read(unsigned int address)
     PORTA_shadow = PORTA_shadow | (1 << 2);
     PORTA = PORTA_shadow;
     address_select(address);
-    
+    unsigned char data = get_data_p2s_register();
     
     // oe = 0
 //    PORTA_shadow = PORTA_shadow & ~(1 << 3);
 //    PORTA = PORTA_shadow;
-    unsigned char data =  get_data_p2s_register();
 //    // oe = 1
 //    PORTA_shadow = PORTA_shadow | (1 << 3);
 //    PORTA = PORTA_shadow;
@@ -274,6 +278,65 @@ void sram_write(unsigned int data, unsigned int address)
     delay(1000);
     // we = 1
     PORTA_shadow = PORTA_shadow | (1 << 2);
+    PORTA = PORTA_shadow;
+    delay(1000);
+    return;
+}
+
+void address_select(unsigned int n) {
+        PORTC = (n & 0xFF);
+        PORTB_shadow = (PORTB_shadow & (0x1F)) | ((n >> 3) & 0xe0);
+        PORTB = PORTB_shadow;
+        delay(1000);
+        return;
+}
+
+unsigned char get_data_p2s_register() {
+    // oe = 0
+    PORTA_shadow = PORTA_shadow & ~(1 << 3);
+    PORTA = PORTA_shadow;
+    delay(1000);
+    // PL = 0
+    PORTA_shadow = PORTA_shadow & ~(1 << 6);
+    PORTA = PORTA_shadow;
+    delay(1000);
+    // PL = 1;
+    PORTA_shadow = PORTA_shadow | (1 << 6);
+    PORTA = PORTA_shadow;
+    delay(1000);
+     // oe = 1
+//    PORTA_shadow = PORTA_shadow | (1 << 3);
+//    PORTA = PORTA_shadow;
+    int i;
+    unsigned char data = 0x00;// = PORTAbits.RA4;
+    int i;
+    for (i = 0; i < 8; i++) {
+        data = data | (PORTAbits.RA4 << i);
+        toggle_buffer_clock();
+    }
+    return data;
+    
+}
+
+void set_s2p_shift_register(unsigned int data) {
+    int i;
+    unsigned char serial_out = 0;
+    int shift = 7;
+    for (i = 0; i < 8; i++) {
+        serial_out = (data >> shift) & 0x1;
+        PORTA_shadow = (PORTA_shadow & ~(1 << 1)) | (serial_out << 1);
+        PORTA = PORTA_shadow;
+        toggle_buffer_clock();
+        shift = shift - 1; 
+    }
+    return;
+}
+
+void toggle_buffer_clock() {
+    PORTA_shadow = PORTA_shadow | 1;
+    PORTA = PORTA_shadow;
+    delay(1000);
+    PORTA_shadow = PORTA_shadow & ~1;
     PORTA = PORTA_shadow;
     delay(1000);
     return;
