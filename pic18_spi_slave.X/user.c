@@ -47,7 +47,7 @@ void InitApp(void)
     uploadReq1 = 0;
     
     // SRAM
-    PORTA_shadow = 0x00 | (1 << 5);
+    PORTA_shadow = 0x00;
     PORTB_shadow = 0x00;
     PORTC_shadow = 0x00;
 
@@ -274,8 +274,8 @@ char getEvenParity(char data)
 unsigned char sram_read(unsigned int address)
 {
     // we = 1
-    PORTA_shadow = PORTA_shadow | (1 << 2);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow | (1 << 5);
+    PORTC = PORTC_shadow;
     address_select(address);
     unsigned char data = get_data_p2s_register();
     
@@ -292,24 +292,25 @@ unsigned char sram_read(unsigned int address)
 void sram_write(unsigned int data, unsigned int address)
 {
     // oe = 1
-    PORTA_shadow = PORTA_shadow | (1 << 3);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow | (1 << 4);
+    PORTC = PORTC_shadow;
     address_select(address);
     set_s2p_shift_register(data);
     // we = 0
-    PORTA_shadow = PORTA_shadow & ~(1 << 2);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow & ~(1 << 5);
+    PORTC = PORTC_shadow;
     delay(1000);
     // we = 1
-    PORTA_shadow = PORTA_shadow | (1 << 2);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow | (1 << 5);
+    PORTC = PORTC_shadow;
     delay(1000);
     return;
 }
 
 void address_select(unsigned int n) {
-        PORTC = (n & 0xFF);
-        PORTB_shadow = (PORTB_shadow & (0x1F)) | ((n >> 3) & 0xe0);
+        PORTA_shadow = PORTA_shadow  & 0x80;
+        PORTA_shadow = PORTA_shadow | (n & 0x7F);
+        PORTB_shadow = (PORTB_shadow & (0x0F)) | ((n >> 4) & 0xf0);
         PORTB = PORTB_shadow;
         delay(1000);
         return;
@@ -317,16 +318,16 @@ void address_select(unsigned int n) {
 
 unsigned char get_data_p2s_register() {
     // oe = 0
-    PORTA_shadow = PORTA_shadow & ~(1 << 3);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow & ~(1 << 4);
+    PORTC = PORTC_shadow;
     delay(1000);
     // PL = 0
-    PORTA_shadow = PORTA_shadow & ~(1 << 6);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow & ~(1 << 2);
+    PORTC = PORTC_shadow;
     delay(1000);
     // PL = 1;
-    PORTA_shadow = PORTA_shadow | (1 << 6);
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow | (1 << 2);
+    PORTC = PORTC_shadow;
     delay(1000);
      // oe = 1
 //    PORTA_shadow = PORTA_shadow | (1 << 3);
@@ -335,7 +336,7 @@ unsigned char get_data_p2s_register() {
     unsigned char data = 0x00;// = PORTAbits.RA4;
     int i;
     for (i = 0; i < 8; i++) {
-        data = data | (PORTAbits.RA4 << i);
+        data = data | (PORTCbits.RC3 << i);
         toggle_buffer_clock();
     }
     return data;
@@ -348,8 +349,8 @@ void set_s2p_shift_register(unsigned int data) {
     int shift = 7;
     for (i = 0; i < 8; i++) {
         serial_out = (data >> shift) & 0x1;
-        PORTA_shadow = (PORTA_shadow & ~(1 << 1)) | (serial_out << 1);
-        PORTA = PORTA_shadow;
+        PORTC_shadow = (PORTC_shadow & ~(1 << 1)) | (serial_out << 1);
+        PORTC = PORTC_shadow;
         toggle_buffer_clock();
         shift = shift - 1; 
     }
@@ -357,11 +358,11 @@ void set_s2p_shift_register(unsigned int data) {
 }
 
 void toggle_buffer_clock() {
-    PORTA_shadow = PORTA_shadow | 1;
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow | 1;
+    PORTC = PORTC_shadow;
     delay(1000);
-    PORTA_shadow = PORTA_shadow & ~1;
-    PORTA = PORTA_shadow;
+    PORTC_shadow = PORTC_shadow & ~1;
+    PORTC = PORTC_shadow;
     delay(1000);
     return;
 }
