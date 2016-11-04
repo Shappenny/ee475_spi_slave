@@ -39,10 +39,10 @@ void main(void)
     TRISA = 0x10;
     // Need B0, B1, B2 as input for SPI_SS, SPI_CLK, SPI_IN
     TRISB = 0x07;
-    // For USART need R7 in, R6 out; need R4 in for something else
+    // For USART need R7 in, R6 out; 
     // Need RC3 for p2s register input (reading from sram))
-    //  1001 0100
-    TRISC = 0x94;
+    //  1000 1000
+    TRISC = 0x88;
     
     ANSELB = 0x00;
     ANSELC = 0x00;
@@ -52,67 +52,60 @@ void main(void)
     SPI1_Enable();
     OpenUSART1(baudRate);
     
-    int i = 0;
+
     
     unsigned char cmd, data;
     while(1)
     {
-        for (i = 0; i < 100; i++) {
-        sram_write(i, i);
-        
-    }
-       for (i = 0; i < 100; i++) {
-        sram_read(i);
-        
-        }
+
         
         //char flag = 1;
         // Receive from USART if data is available
-//        while (DataRdy1USART()) 
-//        {
-//            cmd = readcUSART();           
-//
-//            // Parse command
-//            if (cmd == START_RX)
-//            {
-//                startCollection = 1;
-//                //stopCollection = 0;
-//            } else if (cmd == STOP_RX)
-//            {
-//                //startCollection = 0;
-//                stopCollection = 1;
-//            }
-//        }
-//        // Send/read SPI
-//        //data = spiSendRead(SPI_IDLE);
-//        spiSendRead(0x78);
-//        delay(10);
-//        // If rover requested SPI upload, store incoming data bytes in SRAM
-//        if (!roverUploadReq)
-//        {
-//            int i;
-//            for (i = 0; i < 1024; ++i)
-//            {
-//                data = spiSendRead(SPI_IDLE);
-//                sram_write(i, data);
-//                delay(10);
-//            }
-//            // Upload complete
-//            roverUploadReq = 0;
-//        }
-//        // Upload data to land station if allowed
-//        if (canSendUART)
-//        {
-//            int i;
-//            for (i = 0; i < 1024; ++i)
-//            {
-//                data = sram_read(i);
-//                putc1USART(data);
-//                delay(10);
-//            }
-//        }
-//        //delay(10000);
-//        //testUSART();
+        while (DataRdy1USART()) 
+        {
+            cmd = readcUSART();           
+
+            // Parse command
+            if (cmd == START_RX)
+            {
+                startCollection = 1;
+                //stopCollection = 0;
+            } else if (cmd == STOP_RX)
+            {
+                //startCollection = 0;
+                stopCollection = 1;
+            }
+        }
+        // Send/read SPI
+        //data = spiSendRead(SPI_IDLE);
+        spiSendRead(0x78);
+        delay(10);
+        // If rover requested SPI upload, store incoming data bytes in SRAM
+        if (!roverUploadReq)
+        {
+            int i;
+            for (i = 0; i < 1024; ++i)
+            {
+                data = spiSendRead(SPI_IDLE);
+                sram_write(i, data);
+                delay(10);
+            }
+            // Upload complete
+            roverUploadReq = 0;
+        }
+        // Upload data to land station if allowed
+        if (canSendUART)
+        {
+            int i;
+            for (i = 0; i < 1024; ++i)
+            {
+                data = sram_read(i);
+                putc1USART(data);
+                delay(10);
+            }
+        }
+        //delay(10000);
+        //testUSART();
     }
 }
 

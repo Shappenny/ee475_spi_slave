@@ -273,9 +273,12 @@ char getEvenParity(char data)
 
 unsigned char sram_read(unsigned int address)
 {
+    PORTB_shadow = PORTB_shadow | (1 << 7);
+    PORTB = PORTB_shadow;
     // we = 1
-    PORTC_shadow = PORTC_shadow | (1 << 5);
+    PORTC_shadow = PORTC_shadow | (1 << 4);
     PORTC = PORTC_shadow;
+    
     address_select(address);
     unsigned char data = get_data_p2s_register();
     
@@ -291,17 +294,20 @@ unsigned char sram_read(unsigned int address)
 
 void sram_write(unsigned int data, unsigned int address)
 {
+    
+    PORTB_shadow = PORTB_shadow & ~(1 << 7);
+    PORTB = PORTB_shadow;
     // oe = 1
-    PORTC_shadow = PORTC_shadow | (1 << 4);
+    PORTC_shadow = PORTC_shadow | (1 <<5);
     PORTC = PORTC_shadow;
     address_select(address);
     set_s2p_shift_register(data);
     // we = 0
-    PORTC_shadow = PORTC_shadow & ~(1 << 5);
+    PORTC_shadow = PORTC_shadow & ~(1 << 4);
     PORTC = PORTC_shadow;
     delay(1000);
     // we = 1
-    PORTC_shadow = PORTC_shadow | (1 << 5);
+    PORTC_shadow = PORTC_shadow | (1 << 4);
     PORTC = PORTC_shadow;
     delay(1000);
     return;
@@ -310,7 +316,8 @@ void sram_write(unsigned int data, unsigned int address)
 void address_select(unsigned int n) {
         PORTA_shadow = PORTA_shadow  & 0x80;
         PORTA_shadow = PORTA_shadow | (n & 0x7F);
-        PORTB_shadow = (PORTB_shadow & (0x0F)) | ((n >> 4) & 0xf0);
+        PORTB_shadow = (PORTB_shadow & ~(0x30)) | ((n >> 4) & 0x30);
+        PORTA = PORTA_shadow;
         PORTB = PORTB_shadow;
         delay(1000);
         return;
@@ -318,7 +325,7 @@ void address_select(unsigned int n) {
 
 unsigned char get_data_p2s_register() {
     // oe = 0
-    PORTC_shadow = PORTC_shadow & ~(1 << 4);
+    PORTC_shadow = PORTC_shadow & ~(1 << 5);
     PORTC = PORTC_shadow;
     delay(1000);
     // PL = 0
@@ -339,6 +346,10 @@ unsigned char get_data_p2s_register() {
         data = data | (PORTCbits.RC3 << i);
         toggle_buffer_clock();
     }
+    
+    // oe = 1
+    PORTC_shadow = PORTC_shadow | (1 << 5);
+    PORTC = PORTC_shadow;
     return data;
     
 }
